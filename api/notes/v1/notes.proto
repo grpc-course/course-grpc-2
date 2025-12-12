@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1";
+
+import "google/type/datetime.proto";
+
+package api.notes.v1;
+
+message NoteRequest {
+  string id = 1;
+};
+
+message NoteResponse {
+  google.type.DateTime created_at = 1;
+  string id = 2;
+  string text = 3;
+};
+
+service NoteAPI {
+  rpc GetNote(NoteRequest) returns(NoteResponse) {}
+}
