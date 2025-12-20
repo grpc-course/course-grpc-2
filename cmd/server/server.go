@@ -8,8 +8,16 @@ import (
 
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 
 	pb "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1"
+)
+
+const (
+	keepaliveTime    = 50 * time.Second
+	keepaliveTimeout = 10 * time.Second
+	keepaliveMinTime = 30 * time.Second
 )
 
 type server struct {
@@ -43,7 +51,24 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
+	// Создание gRPC сервера с параметрами
+	s := grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.KeepaliveParams(
+			keepalive.ServerParameters{ //nolint:exhaustruct
+				Time:    keepaliveTime,
+				Timeout: keepaliveTimeout,
+			},
+		),
+		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+			MinTime:             keepaliveMinTime,
+			PermitWithoutStream: true,
+		}),
+		// Создаем интерсепторы
+		grpc.ChainUnaryInterceptor(
+			interceptorStat,
+		),
+	)
 	pb.RegisterNoteAPIServer(s, &server{})
 
 	log.Printf("server listening at %v", lis.Addr())
