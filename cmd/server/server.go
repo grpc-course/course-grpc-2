@@ -67,6 +67,7 @@ func main() {
 		// Создаем интерсепторы
 		grpc.ChainUnaryInterceptor(
 			interceptorStat,
+			interceptorAuth,
 		),
 	)
 	pb.RegisterNoteAPIServer(s, &server{})
