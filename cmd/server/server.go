@@ -8,10 +8,13 @@ import (
 
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1"
+	"github.com/easyp-tech/grpc-cource-2/pkg/auth"
 )
 
 const (
@@ -24,8 +27,13 @@ type server struct {
 	pb.UnimplementedNoteAPIServer
 }
 
-func (s *server) GetNote(_ context.Context, req *pb.NoteRequest) (*pb.NoteResponse, error) {
-	log.Printf("Received note request for id: %s", req.Id)
+func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResponse, error) {
+	user, ok := auth.GetUserFromContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+	}
+
+	log.Printf("Received note request for id: %s; user: %v", req.Id, user)
 
 	now := time.Now()
 
