@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package api.notes.v1;
+
+option go_package = "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1";
+
+import "google/type/datetime.proto";
+import "buf/validate/validate.proto";
+
+message NoteRequest {
+  string id = 1;
+};
+
+message NoteResponse {
+  google.type.DateTime created_at = 1;
+  string id = 2;
+  string text = 3;
+};
+
+message NoteCreateRequest {
+  string title = 1[
+    (buf.validate.field).string.min_len = 5
+  ];
+  string text = 2 [
+    (buf.validate.field).string.min_len = 10
+  ];
+  repeated string tags = 3[
+    (buf.validate.field).repeated.min_items = 1
+  ];
+
+  option (buf.validate.message).cel = {
+    message: "title should not be equal to text",
+    // ожидаем что получим или только айди пользователя или только его почту, но точно должно быть что-то одно
+    expression: "this.title != this.text",
+  };
+
+};
+
+message NoteCreateResponse {};

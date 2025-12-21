@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NoteAPI_GetNote_FullMethodName = "/api.notes.v1.NoteAPI/GetNote"
+	NoteAPI_GetNote_FullMethodName    = "/api.notes.v1.NoteAPI/GetNote"
+	NoteAPI_CreateNote_FullMethodName = "/api.notes.v1.NoteAPI/CreateNote"
 )
 
 // NoteAPIClient is the client API for NoteAPI service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NoteAPIClient interface {
 	GetNote(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (*NoteResponse, error)
+	CreateNote(ctx context.Context, in *NoteCreateRequest, opts ...grpc.CallOption) (*NoteCreateResponse, error)
 }
 
 type noteAPIClient struct {
@@ -46,11 +48,21 @@ func (c *noteAPIClient) GetNote(ctx context.Context, in *NoteRequest, opts ...gr
 	return out, nil
 }
 
+func (c *noteAPIClient) CreateNote(ctx context.Context, in *NoteCreateRequest, opts ...grpc.CallOption) (*NoteCreateResponse, error) {
+	out := new(NoteCreateResponse)
+	err := c.cc.Invoke(ctx, NoteAPI_CreateNote_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NoteAPIServer is the server API for NoteAPI service.
 // All implementations should embed UnimplementedNoteAPIServer
 // for forward compatibility
 type NoteAPIServer interface {
 	GetNote(context.Context, *NoteRequest) (*NoteResponse, error)
+	CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error)
 }
 
 // UnimplementedNoteAPIServer should be embedded to have forward compatible implementations.
@@ -59,6 +71,9 @@ type UnimplementedNoteAPIServer struct {
 
 func (UnimplementedNoteAPIServer) GetNote(context.Context, *NoteRequest) (*NoteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNote not implemented")
+}
+func (UnimplementedNoteAPIServer) CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNote not implemented")
 }
 
 // UnsafeNoteAPIServer may be embedded to opt out of forward compatibility for this service.
@@ -90,6 +105,24 @@ func _NoteAPI_GetNote_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NoteAPI_CreateNote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NoteCreateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NoteAPIServer).CreateNote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NoteAPI_CreateNote_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NoteAPIServer).CreateNote(ctx, req.(*NoteCreateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NoteAPI_ServiceDesc is the grpc.ServiceDesc for NoteAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +133,10 @@ var NoteAPI_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNote",
 			Handler:    _NoteAPI_GetNote_Handler,
+		},
+		{
+			MethodName: "CreateNote",
+			Handler:    _NoteAPI_CreateNote_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
