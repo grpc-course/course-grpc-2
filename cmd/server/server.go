@@ -24,6 +24,7 @@ const (
 )
 
 type server struct {
+	cnt int // dummy
 	pb.UnimplementedNoteAPIServer
 }
 
@@ -36,6 +37,10 @@ func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResp
 	log.Printf("Received note request for id: %s; user: %v", req.Id, user)
 
 	now := time.Now()
+	s.cnt++
+	if s.cnt%2 == 0 {
+		return s.WithError(ctx, req)
+	}
 
 	createdAt := &datetime.DateTime{
 		Year:    int32(now.Year()),
@@ -51,6 +56,21 @@ func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResp
 		Id:        req.Id,
 		Text:      "some_test",
 	}, nil
+}
+
+func (s *server) WithError(ctx context.Context, in *pb.NoteRequest) (*pb.NoteResponse, error) {
+	// формируем кастомную ошибку
+	st := status.New(codes.FailedPrecondition, "Custom error")
+	errMsg := &pb.CustomError{Reason: pb.ErrorCode_ERROR_CODE_INVALID_TEXT}
+
+	var err error
+	// дополняем ее деталями: которые содержат структуру сообщения из proto файла.
+	st, err = st.WithDetails(errMsg)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, st.Err()
 }
 
 func main() {
