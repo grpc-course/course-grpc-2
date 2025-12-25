@@ -35,11 +35,12 @@ func streamBidirectional(ctx context.Context, c pb.NoteAPIClient) {
 				return
 			}
 
-			msg := fmt.Sprintf("sent %d", cntSent)
+			msg := fmt.Sprintf("FROM CLIENT: %d", cntSent)
 			if err := streamClient.Send(&pb.NoteRequest{Id: msg}); err != nil {
 				errCh <- fmt.Errorf("failed to send async message %d: %w", cntSent, err)
 				return
 			}
+			cntSent++
 
 			log.Printf("[Client] Sent async: %s", msg)
 			time.Sleep(800 * time.Millisecond)

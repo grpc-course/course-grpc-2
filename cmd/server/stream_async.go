@@ -11,7 +11,7 @@ import (
 )
 
 func (s *server) StreamNotesBidirectional(streamServer pb.NoteAPI_StreamNotesBidirectionalServer) error {
-	log.Println("EchoBidirectionalStreamAsync: Starting bidirectional stream (async)")
+	log.Println("[SERVER] Starting bidirectional stream (async)")
 	cntSent := 0
 
 	ctx := streamServer.Context()
@@ -24,19 +24,20 @@ func (s *server) StreamNotesBidirectional(streamServer pb.NoteAPI_StreamNotesBid
 		for {
 			req, err := streamServer.Recv()
 			if err == io.EOF {
-				log.Println("EchoBidirectionalStreamAsync: Client closed connection")
+				log.Println("[SERVER] Client closed connection")
 				return
 			}
 			if err != nil {
-				log.Printf("EchoBidirectionalStreamAsync: Error receiving message: %v", err)
+				log.Printf("[SERVER] Error receiving message: %v", err)
 				return
 			}
 
-			log.Printf("EchoBidirectionalStreamAsync: Received message: %s", req.Id)
+			log.Printf("[SERVER] Received message: %s", req.Id)
 
 			select {
 			case <-ctx.Done():
 				return
+			default:
 			}
 		}
 	}()
@@ -51,12 +52,12 @@ func (s *server) StreamNotesBidirectional(streamServer pb.NoteAPI_StreamNotesBid
 			}
 
 			toSend := &pb.NoteResponse{
-				Text: fmt.Sprintf("Note #%v", cntSent),
+				Text: fmt.Sprintf("FROM SERVER: %v", cntSent),
 			}
 			cntSent++
-			log.Printf("EchoBidirectionalStreamAsync: Sending message: %v", toSend)
+			log.Printf("[SERVER] Sending message: %v", toSend)
 			if err := streamServer.Send(toSend); err != nil {
-				log.Printf("EchoBidirectionalStreamAsync: Error sending message: %v", err)
+				log.Printf("[SERVER] Error sending message: %v", err)
 			}
 
 			select {
@@ -68,6 +69,6 @@ func (s *server) StreamNotesBidirectional(streamServer pb.NoteAPI_StreamNotesBid
 	}()
 
 	wg.Wait()
-	log.Println("EchoBidirectionalStreamAsync: Stream finished")
+	log.Println("[SERVER] Stream finished")
 	return nil
 }
