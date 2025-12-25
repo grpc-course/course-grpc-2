@@ -42,3 +42,10 @@ func interceptorAuth(
 
 	return handler(ctx, req)
 }
+
+func interceptorStream(
+	srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler,
+) error {
+	log.Printf("Streaming %v", info.FullMethod)
+	return handler(srv, ss)
+}

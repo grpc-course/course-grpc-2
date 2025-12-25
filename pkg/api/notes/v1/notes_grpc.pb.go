@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	NoteAPI_GetNote_FullMethodName    = "/api.notes.v1.NoteAPI/GetNote"
-	NoteAPI_CreateNote_FullMethodName = "/api.notes.v1.NoteAPI/CreateNote"
+	NoteAPI_GetNote_FullMethodName                  = "/api.notes.v1.NoteAPI/GetNote"
+	NoteAPI_CreateNote_FullMethodName               = "/api.notes.v1.NoteAPI/CreateNote"
+	NoteAPI_StreamNotes_FullMethodName              = "/api.notes.v1.NoteAPI/StreamNotes"
+	NoteAPI_StreamNotesBidirectional_FullMethodName = "/api.notes.v1.NoteAPI/StreamNotesBidirectional"
 )
 
 // NoteAPIClient is the client API for NoteAPI service.
@@ -29,6 +31,8 @@ const (
 type NoteAPIClient interface {
 	GetNote(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (*NoteResponse, error)
 	CreateNote(ctx context.Context, in *NoteCreateRequest, opts ...grpc.CallOption) (*NoteCreateResponse, error)
+	StreamNotes(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error)
+	StreamNotesBidirectional(ctx context.Context, opts ...grpc.CallOption) (NoteAPI_StreamNotesBidirectionalClient, error)
 }
 
 type noteAPIClient struct {
@@ -57,12 +61,77 @@ func (c *noteAPIClient) CreateNote(ctx context.Context, in *NoteCreateRequest, o
 	return out, nil
 }
 
+func (c *noteAPIClient) StreamNotes(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &NoteAPI_ServiceDesc.Streams[0], NoteAPI_StreamNotes_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &noteAPIStreamNotesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type NoteAPI_StreamNotesClient interface {
+	Recv() (*NoteResponse, error)
+	grpc.ClientStream
+}
+
+type noteAPIStreamNotesClient struct {
+	grpc.ClientStream
+}
+
+func (x *noteAPIStreamNotesClient) Recv() (*NoteResponse, error) {
+	m := new(NoteResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *noteAPIClient) StreamNotesBidirectional(ctx context.Context, opts ...grpc.CallOption) (NoteAPI_StreamNotesBidirectionalClient, error) {
+	stream, err := c.cc.NewStream(ctx, &NoteAPI_ServiceDesc.Streams[1], NoteAPI_StreamNotesBidirectional_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &noteAPIStreamNotesBidirectionalClient{stream}
+	return x, nil
+}
+
+type NoteAPI_StreamNotesBidirectionalClient interface {
+	Send(*NoteRequest) error
+	Recv() (*NoteResponse, error)
+	grpc.ClientStream
+}
+
+type noteAPIStreamNotesBidirectionalClient struct {
+	grpc.ClientStream
+}
+
+func (x *noteAPIStreamNotesBidirectionalClient) Send(m *NoteRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *noteAPIStreamNotesBidirectionalClient) Recv() (*NoteResponse, error) {
+	m := new(NoteResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // NoteAPIServer is the server API for NoteAPI service.
 // All implementations should embed UnimplementedNoteAPIServer
 // for forward compatibility
 type NoteAPIServer interface {
 	GetNote(context.Context, *NoteRequest) (*NoteResponse, error)
 	CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error)
+	StreamNotes(*NoteRequest, NoteAPI_StreamNotesServer) error
+	StreamNotesBidirectional(NoteAPI_StreamNotesBidirectionalServer) error
 }
 
 // UnimplementedNoteAPIServer should be embedded to have forward compatible implementations.
@@ -74,6 +143,12 @@ func (UnimplementedNoteAPIServer) GetNote(context.Context, *NoteRequest) (*NoteR
 }
 func (UnimplementedNoteAPIServer) CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNote not implemented")
+}
+func (UnimplementedNoteAPIServer) StreamNotes(*NoteRequest, NoteAPI_StreamNotesServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamNotes not implemented")
+}
+func (UnimplementedNoteAPIServer) StreamNotesBidirectional(NoteAPI_StreamNotesBidirectionalServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamNotesBidirectional not implemented")
 }
 
 // UnsafeNoteAPIServer may be embedded to opt out of forward compatibility for this service.
@@ -123,6 +198,53 @@ func _NoteAPI_CreateNote_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NoteAPI_StreamNotes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(NoteRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(NoteAPIServer).StreamNotes(m, &noteAPIStreamNotesServer{stream})
+}
+
+type NoteAPI_StreamNotesServer interface {
+	Send(*NoteResponse) error
+	grpc.ServerStream
+}
+
+type noteAPIStreamNotesServer struct {
+	grpc.ServerStream
+}
+
+func (x *noteAPIStreamNotesServer) Send(m *NoteResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _NoteAPI_StreamNotesBidirectional_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(NoteAPIServer).StreamNotesBidirectional(&noteAPIStreamNotesBidirectionalServer{stream})
+}
+
+type NoteAPI_StreamNotesBidirectionalServer interface {
+	Send(*NoteResponse) error
+	Recv() (*NoteRequest, error)
+	grpc.ServerStream
+}
+
+type noteAPIStreamNotesBidirectionalServer struct {
+	grpc.ServerStream
+}
+
+func (x *noteAPIStreamNotesBidirectionalServer) Send(m *NoteResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *noteAPIStreamNotesBidirectionalServer) Recv() (*NoteRequest, error) {
+	m := new(NoteRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // NoteAPI_ServiceDesc is the grpc.ServiceDesc for NoteAPI service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +261,18 @@ var NoteAPI_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _NoteAPI_CreateNote_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamNotes",
+			Handler:       _NoteAPI_StreamNotes_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StreamNotesBidirectional",
+			Handler:       _NoteAPI_StreamNotesBidirectional_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "api/notes/v1/notes.proto",
 }

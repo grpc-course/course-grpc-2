@@ -9,4 +9,7 @@ import "api/notes/v1/messages.proto";
 service NoteAPI {
   rpc GetNote(NoteRequest) returns(NoteResponse) {}
   rpc CreateNote(NoteCreateRequest) returns(NoteCreateResponse) {}
+
+  rpc StreamNotes(NoteRequest) returns (stream NoteResponse);
+  rpc StreamNotesBidirectional(stream NoteRequest) returns (stream NoteResponse);
 }
