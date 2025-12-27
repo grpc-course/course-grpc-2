@@ -35,7 +35,7 @@ type server struct {
 func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResponse, error) {
 	user, ok := auth.GetUserFromContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+		//return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
 	}
 
 	log.Printf("Received note request for id: %s; user: %v", req.Id, user)
@@ -44,6 +44,10 @@ func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResp
 	s.cnt++
 	if s.cnt%2 == 0 {
 		return s.WithError(ctx, req)
+	}
+
+	if s.cnt%3 == 0 {
+		return nil, status.Error(codes.NotFound, "user has no notes")
 	}
 
 	createdAt := &datetime.DateTime{

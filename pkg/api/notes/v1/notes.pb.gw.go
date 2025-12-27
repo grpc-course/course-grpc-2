@@ -39,12 +39,18 @@ func request_NoteAPI_GetNote_0(ctx context.Context, marshaler runtime.Marshaler,
 	var (
 		protoReq NoteRequest
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := client.GetNote(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -54,9 +60,15 @@ func local_request_NoteAPI_GetNote_0(ctx context.Context, marshaler runtime.Mars
 	var (
 		protoReq NoteRequest
 		metadata runtime.ServerMetadata
+		err      error
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	val, ok := pathParams["id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+	}
+	protoReq.Id, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
 	}
 	msg, err := server.GetNote(ctx, &protoReq)
 	return msg, metadata, err
@@ -161,13 +173,13 @@ func request_NoteAPI_StreamNotesBidirectional_0(ctx context.Context, marshaler r
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterNoteAPIHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterNoteAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server NoteAPIServer) error {
-	mux.Handle(http.MethodPost, pattern_NoteAPI_GetNote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_NoteAPI_GetNote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.notes.v1.NoteAPI/GetNote", runtime.WithHTTPPathPattern("/api.notes.v1.NoteAPI/GetNote"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.notes.v1.NoteAPI/GetNote", runtime.WithHTTPPathPattern("/api/v1/notes/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -255,11 +267,11 @@ func RegisterNoteAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *gr
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "NoteAPIClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client NoteAPIClient) error {
-	mux.Handle(http.MethodPost, pattern_NoteAPI_GetNote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_NoteAPI_GetNote_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/GetNote", runtime.WithHTTPPathPattern("/api.notes.v1.NoteAPI/GetNote"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/GetNote", runtime.WithHTTPPathPattern("/api/v1/notes/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -293,7 +305,7 @@ func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/StreamNotes", runtime.WithHTTPPathPattern("/api.notes.v1.NoteAPI/StreamNotes"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/StreamNotes", runtime.WithHTTPPathPattern("/api/v1/stream"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -327,9 +339,9 @@ func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 }
 
 var (
-	pattern_NoteAPI_GetNote_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "GetNote"}, ""))
+	pattern_NoteAPI_GetNote_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "notes", "id"}, ""))
 	pattern_NoteAPI_CreateNote_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "notes"}, ""))
-	pattern_NoteAPI_StreamNotes_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "StreamNotes"}, ""))
+	pattern_NoteAPI_StreamNotes_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "stream"}, ""))
 	pattern_NoteAPI_StreamNotesBidirectional_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "StreamNotesBidirectional"}, ""))
 )
 
