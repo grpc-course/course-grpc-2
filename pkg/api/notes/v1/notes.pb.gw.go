@@ -187,7 +187,7 @@ func RegisterNoteAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.notes.v1.NoteAPI/CreateNote", runtime.WithHTTPPathPattern("/v1/notes"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.notes.v1.NoteAPI/CreateNote", runtime.WithHTTPPathPattern("/api/v1/notes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -276,7 +276,7 @@ func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/CreateNote", runtime.WithHTTPPathPattern("/v1/notes"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.notes.v1.NoteAPI/CreateNote", runtime.WithHTTPPathPattern("/api/v1/notes"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -328,7 +328,7 @@ func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 
 var (
 	pattern_NoteAPI_GetNote_0                  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "GetNote"}, ""))
-	pattern_NoteAPI_CreateNote_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "notes"}, ""))
+	pattern_NoteAPI_CreateNote_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "notes"}, ""))
 	pattern_NoteAPI_StreamNotes_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "StreamNotes"}, ""))
 	pattern_NoteAPI_StreamNotesBidirectional_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.notes.v1.NoteAPI", "StreamNotesBidirectional"}, ""))
 )

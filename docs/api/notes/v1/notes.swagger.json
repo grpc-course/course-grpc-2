@@ -131,7 +131,7 @@
         ]
       }
     },
-    "/v1/notes": {
+    "/api/v1/notes": {
       "post": {
         "operationId": "NoteAPI_CreateNote",
         "responses": {

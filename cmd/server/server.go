@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
+	openapi "github.com/easyp-tech/grpc-cource-2/docs/api/notes/v1"
 	pb "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1"
 	"github.com/easyp-tech/grpc-cource-2/pkg/auth"
 )
@@ -110,11 +111,16 @@ func main() {
 	pb.RegisterNoteAPIServer(s, ser)
 
 	// init http
-	mux := runtime.NewServeMux()
-	err = pb.RegisterNoteAPIHandlerServer(ctx, mux, ser)
+	//mux := runtime.NewServeMux()
+	mux := http.NewServeMux()
+	gwMux := runtime.NewServeMux()
+
+	err = pb.RegisterNoteAPIHandlerServer(ctx, gwMux, ser)
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
+
+	serveSwagger(mux, openapi.Content)
 
 	wg := sync.WaitGroup{}
 
@@ -127,6 +133,7 @@ func main() {
 	}()
 
 	wg.Add(1)
+	mux.Handle("/api/", gwMux)
 	go func() {
 		if err := http.ListenAndServe(":8081", mux); err != nil {
 			log.Fatalf("failed to serve: %v", err)
