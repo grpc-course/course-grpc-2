@@ -4,8 +4,11 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
+	"sync"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -74,10 +77,13 @@ func (s *server) WithError(ctx context.Context, in *pb.NoteRequest) (*pb.NoteRes
 }
 
 func main() {
+	ctx := context.Background()
+
 	lis, err := net.Listen("tcp", ":5001")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	ser := &server{}
 
 	// Создание gRPC сервера с параметрами
 	s := grpc.NewServer(
@@ -101,10 +107,31 @@ func main() {
 			interceptorStream,
 		),
 	)
-	pb.RegisterNoteAPIServer(s, &server{})
+	pb.RegisterNoteAPIServer(s, ser)
 
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	// init http
+	mux := runtime.NewServeMux()
+	err = pb.RegisterNoteAPIHandlerServer(ctx, mux, ser)
+	if err != nil {
+		log.Fatalf("err: %v", err)
 	}
+
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		log.Printf("server listening at %v", lis.Addr())
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		if err := http.ListenAndServe(":8081", mux); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	wg.Wait()
 }
