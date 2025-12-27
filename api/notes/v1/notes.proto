@@ -13,6 +13,7 @@ service NoteAPI {
       get: "/api/v1/notes/{id}"
     };
   }
+
   rpc CreateNote(NoteCreateRequest) returns(NoteCreateResponse) {
     option (google.api.http) = {
       post: "/api/v1/notes"
@@ -22,9 +23,9 @@ service NoteAPI {
 
   rpc StreamNotes(NoteRequest) returns (stream NoteResponse) {
     option (google.api.http) = {
-      post: "/api/v1/stream"
-      body: "*"
+      get: "/api/v1/stream"
     };
   };
+
   rpc StreamNotesBidirectional(stream NoteRequest) returns (stream NoteResponse);
 }

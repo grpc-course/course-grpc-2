@@ -101,16 +101,21 @@ func local_request_NoteAPI_CreateNote_0(ctx context.Context, marshaler runtime.M
 	return msg, metadata, err
 }
 
+var filter_NoteAPI_StreamNotes_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
 func request_NoteAPI_StreamNotes_0(ctx context.Context, marshaler runtime.Marshaler, client NoteAPIClient, req *http.Request, pathParams map[string]string) (NoteAPI_StreamNotesClient, runtime.ServerMetadata, error) {
 	var (
 		protoReq NoteRequest
 		metadata runtime.ServerMetadata
 	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_NoteAPI_StreamNotes_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	stream, err := client.StreamNotes(ctx, &protoReq)
 	if err != nil {
@@ -214,7 +219,7 @@ func RegisterNoteAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		forward_NoteAPI_CreateNote_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
-	mux.Handle(http.MethodPost, pattern_NoteAPI_StreamNotes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_NoteAPI_StreamNotes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -301,7 +306,7 @@ func RegisterNoteAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		}
 		forward_NoteAPI_CreateNote_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPost, pattern_NoteAPI_StreamNotes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_NoteAPI_StreamNotes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)

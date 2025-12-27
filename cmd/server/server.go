@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -137,7 +138,7 @@ func main() {
 	}()
 
 	wg.Add(1)
-	mux.Handle("/api/", gwMux)
+	mux.Handle("/api/", wsproxy.WebsocketProxy(gwMux))
 	go func() {
 		if err := http.ListenAndServe(":8081", mux); err != nil {
 			log.Fatalf("failed to serve: %v", err)

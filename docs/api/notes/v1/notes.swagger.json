@@ -121,7 +121,7 @@
       }
     },
     "/api/v1/stream": {
-      "post": {
+      "get": {
         "operationId": "NoteAPI_StreamNotes",
         "responses": {
           "200": {
@@ -148,12 +148,10 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1NoteRequest"
-            }
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
