@@ -4,8 +4,12 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
+	"sync"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 	"google.golang.org/genproto/googleapis/type/datetime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,6 +17,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
+	openapi "github.com/easyp-tech/grpc-cource-2/docs/api/notes/v1"
 	pb "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1"
 	"github.com/easyp-tech/grpc-cource-2/pkg/auth"
 )
@@ -31,7 +36,7 @@ type server struct {
 func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResponse, error) {
 	user, ok := auth.GetUserFromContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
+		//return nil, status.Errorf(codes.Unauthenticated, "unauthenticated")
 	}
 
 	log.Printf("Received note request for id: %s; user: %v", req.Id, user)
@@ -40,6 +45,10 @@ func (s *server) GetNote(ctx context.Context, req *pb.NoteRequest) (*pb.NoteResp
 	s.cnt++
 	if s.cnt%2 == 0 {
 		return s.WithError(ctx, req)
+	}
+
+	if s.cnt%3 == 0 {
+		return nil, status.Error(codes.NotFound, "user has no notes")
 	}
 
 	createdAt := &datetime.DateTime{
@@ -74,10 +83,15 @@ func (s *server) WithError(ctx context.Context, in *pb.NoteRequest) (*pb.NoteRes
 }
 
 func main() {
+	wg := sync.WaitGroup{}
+
+	ctx := context.Background()
+
 	lis, err := net.Listen("tcp", ":5001")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	ser := &server{}
 
 	// Создание gRPC сервера с параметрами
 	s := grpc.NewServer(
@@ -101,10 +115,38 @@ func main() {
 			interceptorStream,
 		),
 	)
-	pb.RegisterNoteAPIServer(s, &server{})
+	pb.RegisterNoteAPIServer(s, ser)
 
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	wg.Add(1)
+	go func() {
+		log.Printf("grpc server listening at %v", lis.Addr())
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	// init http
+	//mux := runtime.NewServeMux()
+	mux := http.NewServeMux()
+	gwMux := runtime.NewServeMux()
+
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+
+	err = pb.RegisterNoteAPIHandlerFromEndpoint(ctx, gwMux, lis.Addr().String(), opts)
+	if err != nil {
+		log.Fatalf("err: %v", err)
 	}
+
+	serveSwagger(mux, openapi.Content)
+
+	wg.Add(1)
+	mux.Handle("/api/", corsMiddleware(gwMux))
+	go func() {
+		log.Printf("http server listening at :8081")
+		if err := http.ListenAndServe(":8081", wsproxy.WebsocketProxy(mux)); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	wg.Wait()
 }

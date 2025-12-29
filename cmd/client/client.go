@@ -24,14 +24,14 @@ func main() {
 	//defer cancel()
 	ctx := context.Background()
 
-	//streamServer(ctx, c)
-	streamBidirectional(ctx, c)
+	streamServer(ctx, c)
+	//streamBidirectional(ctx, c)
 }
 
 func streamServer(ctx context.Context, c pb.NoteAPIClient) {
 	log.Printf("Streaming server")
 
-	req := &pb.NoteRequest{}
+	req := &pb.Empty{}
 
 	streamer, err := c.StreamNotes(ctx, req)
 	if err != nil {

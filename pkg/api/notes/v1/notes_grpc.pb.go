@@ -31,7 +31,7 @@ const (
 type NoteAPIClient interface {
 	GetNote(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (*NoteResponse, error)
 	CreateNote(ctx context.Context, in *NoteCreateRequest, opts ...grpc.CallOption) (*NoteCreateResponse, error)
-	StreamNotes(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error)
+	StreamNotes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error)
 	StreamNotesBidirectional(ctx context.Context, opts ...grpc.CallOption) (NoteAPI_StreamNotesBidirectionalClient, error)
 }
 
@@ -61,7 +61,7 @@ func (c *noteAPIClient) CreateNote(ctx context.Context, in *NoteCreateRequest, o
 	return out, nil
 }
 
-func (c *noteAPIClient) StreamNotes(ctx context.Context, in *NoteRequest, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error) {
+func (c *noteAPIClient) StreamNotes(ctx context.Context, in *Empty, opts ...grpc.CallOption) (NoteAPI_StreamNotesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &NoteAPI_ServiceDesc.Streams[0], NoteAPI_StreamNotes_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (x *noteAPIStreamNotesBidirectionalClient) Recv() (*NoteResponse, error) {
 type NoteAPIServer interface {
 	GetNote(context.Context, *NoteRequest) (*NoteResponse, error)
 	CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error)
-	StreamNotes(*NoteRequest, NoteAPI_StreamNotesServer) error
+	StreamNotes(*Empty, NoteAPI_StreamNotesServer) error
 	StreamNotesBidirectional(NoteAPI_StreamNotesBidirectionalServer) error
 }
 
@@ -144,7 +144,7 @@ func (UnimplementedNoteAPIServer) GetNote(context.Context, *NoteRequest) (*NoteR
 func (UnimplementedNoteAPIServer) CreateNote(context.Context, *NoteCreateRequest) (*NoteCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNote not implemented")
 }
-func (UnimplementedNoteAPIServer) StreamNotes(*NoteRequest, NoteAPI_StreamNotesServer) error {
+func (UnimplementedNoteAPIServer) StreamNotes(*Empty, NoteAPI_StreamNotesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamNotes not implemented")
 }
 func (UnimplementedNoteAPIServer) StreamNotesBidirectional(NoteAPI_StreamNotesBidirectionalServer) error {
@@ -199,7 +199,7 @@ func _NoteAPI_CreateNote_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _NoteAPI_StreamNotes_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(NoteRequest)
+	m := new(Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}

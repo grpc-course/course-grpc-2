@@ -233,6 +233,44 @@ func (*NoteCreateResponse) Descriptor() ([]byte, []int) {
 	return file_api_notes_v1_messages_proto_rawDescGZIP(), []int{3}
 }
 
+type Empty struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_notes_v1_messages_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_api_notes_v1_messages_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_api_notes_v1_messages_proto_rawDescGZIP(), []int{4}
+}
+
 var File_api_notes_v1_messages_proto protoreflect.FileDescriptor
 
 var file_api_notes_v1_messages_proto_rawDesc = []byte{
@@ -263,11 +301,11 @@ var file_api_notes_v1_messages_proto_rawDesc = []byte{
 	0x74, 0x6f, 0x20, 0x74, 0x65, 0x78, 0x74, 0x1a, 0x17, 0x74, 0x68, 0x69, 0x73, 0x2e, 0x74, 0x69,
 	0x74, 0x6c, 0x65, 0x20, 0x21, 0x3d, 0x20, 0x74, 0x68, 0x69, 0x73, 0x2e, 0x74, 0x65, 0x78, 0x74,
 	0x22, 0x14, 0x0a, 0x12, 0x4e, 0x6f, 0x74, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65, 0x61, 0x73, 0x79, 0x70, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f,
-	0x67, 0x72, 0x70, 0x63, 0x2d, 0x63, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x2d, 0x32, 0x2f, 0x70, 0x6b,
-	0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e, 0x6f, 0x74, 0x65, 0x73, 0x2f, 0x76, 0x31, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42,
+	0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x65, 0x61,
+	0x73, 0x79, 0x70, 0x2d, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2d, 0x63, 0x6f,
+	0x75, 0x72, 0x63, 0x65, 0x2d, 0x32, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6e,
+	0x6f, 0x74, 0x65, 0x73, 0x2f, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -282,16 +320,17 @@ func file_api_notes_v1_messages_proto_rawDescGZIP() []byte {
 	return file_api_notes_v1_messages_proto_rawDescData
 }
 
-var file_api_notes_v1_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_api_notes_v1_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_api_notes_v1_messages_proto_goTypes = []interface{}{
 	(*NoteRequest)(nil),        // 0: api.notes.v1.NoteRequest
 	(*NoteResponse)(nil),       // 1: api.notes.v1.NoteResponse
 	(*NoteCreateRequest)(nil),  // 2: api.notes.v1.NoteCreateRequest
 	(*NoteCreateResponse)(nil), // 3: api.notes.v1.NoteCreateResponse
-	(*datetime.DateTime)(nil),  // 4: google.type.DateTime
+	(*Empty)(nil),              // 4: api.notes.v1.Empty
+	(*datetime.DateTime)(nil),  // 5: google.type.DateTime
 }
 var file_api_notes_v1_messages_proto_depIdxs = []int32{
-	4, // 0: api.notes.v1.NoteResponse.created_at:type_name -> google.type.DateTime
+	5, // 0: api.notes.v1.NoteResponse.created_at:type_name -> google.type.DateTime
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -353,6 +392,18 @@ func file_api_notes_v1_messages_proto_init() {
 				return nil
 			}
 		}
+		file_api_notes_v1_messages_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Empty); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -360,7 +411,7 @@ func file_api_notes_v1_messages_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_notes_v1_messages_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

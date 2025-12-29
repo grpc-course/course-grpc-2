@@ -7,7 +7,7 @@ import (
 	pb "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1"
 )
 
-func (s *server) StreamNotes(req *pb.NoteRequest, stream pb.NoteAPI_StreamNotesServer) error {
+func (s *server) StreamNotes(req *pb.Empty, stream pb.NoteAPI_StreamNotesServer) error {
 	log.Printf("StreamNotes called with req: %v", req)
 
 	ctx := stream.Context()

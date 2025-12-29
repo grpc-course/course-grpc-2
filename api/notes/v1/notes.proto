@@ -5,11 +5,31 @@ package api.notes.v1;
 option go_package = "github.com/easyp-tech/grpc-cource-2/pkg/api/notes/v1";
 
 import "api/notes/v1/messages.proto";
+import "google/api/annotations.proto";
 
 service NoteAPI {
-  rpc GetNote(NoteRequest) returns(NoteResponse) {}
-  rpc CreateNote(NoteCreateRequest) returns(NoteCreateResponse) {}
+  rpc GetNote(NoteRequest) returns(NoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/notes/{id}"
+    };
+  }
 
-  rpc StreamNotes(NoteRequest) returns (stream NoteResponse);
-  rpc StreamNotesBidirectional(stream NoteRequest) returns (stream NoteResponse);
+  rpc CreateNote(NoteCreateRequest) returns(NoteCreateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/notes"
+      body: "*"
+    };
+  }
+
+  rpc StreamNotes(Empty) returns (stream NoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/stream"
+    };
+  };
+
+  rpc StreamNotesBidirectional(stream NoteRequest) returns (stream NoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/stream/bid"
+    };
+  };
 }
