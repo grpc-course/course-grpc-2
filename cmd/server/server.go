@@ -122,7 +122,7 @@ func main() {
 			interceptorAuth,
 		),
 		grpc.ChainStreamInterceptor(
-			//interceptorStream,
+		//interceptorStream,
 		),
 	)
 	pb.RegisterNoteAPIServer(s, ser)

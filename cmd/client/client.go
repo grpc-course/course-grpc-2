@@ -24,8 +24,8 @@ func main() {
 	//defer cancel()
 	ctx := context.Background()
 
-	streamServer(ctx, c)
-	//streamBidirectional(ctx, c)
+	//streamServer(ctx, c)
+	streamBidirectional(ctx, c)
 }
 
 func streamServer(ctx context.Context, c pb.NoteAPIClient) {
