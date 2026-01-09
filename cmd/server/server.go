@@ -2,10 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -29,6 +33,7 @@ const (
 )
 
 type server struct {
+	ctx context.Context
 	cnt int // dummy
 	pb.UnimplementedNoteAPIServer
 }
@@ -91,7 +96,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	ser := &server{}
+
+	serverContext, cancel := context.WithCancel(ctx)
+
+	ser := &server{
+		ctx: serverContext,
+	}
 
 	// Создание gRPC сервера с параметрами
 	s := grpc.NewServer(
@@ -112,13 +122,15 @@ func main() {
 			interceptorAuth,
 		),
 		grpc.ChainStreamInterceptor(
-			interceptorStream,
+			//interceptorStream,
 		),
 	)
 	pb.RegisterNoteAPIServer(s, ser)
 
 	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		log.Printf("grpc server listening at %v", lis.Addr())
 		if err := s.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %v", err)
@@ -139,14 +151,40 @@ func main() {
 
 	serveSwagger(mux, openapi.Content)
 
+	serverHttp := &http.Server{
+		Addr:    ":8081",
+		Handler: wsproxy.WebsocketProxy(mux),
+	}
+
 	wg.Add(1)
 	mux.Handle("/api/", corsMiddleware(gwMux))
 	go func() {
+		defer wg.Done()
+
 		log.Printf("http server listening at :8081")
-		if err := http.ListenAndServe(":8081", wsproxy.WebsocketProxy(mux)); err != nil {
-			log.Fatalf("failed to serve: %v", err)
+		if err := serverHttp.ListenAndServe(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				log.Fatalf("failed to serve: %v", err)
+			}
 		}
 	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Printf("Shutting down server...")
+
+	cancel()
+
+	if err := serverHttp.Shutdown(ctx); err != nil {
+		log.Printf("failed to shutdown: %v", err)
+	}
+	log.Printf("Http server is closed")
+
+	s.GracefulStop()
+	//s.Stop()
+
+	log.Printf("Server exited properly")
 
 	wg.Wait()
 }

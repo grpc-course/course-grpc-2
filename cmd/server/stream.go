@@ -12,12 +12,21 @@ func (s *server) StreamNotes(req *pb.Empty, stream pb.NoteAPI_StreamNotesServer)
 
 	ctx := stream.Context()
 
-	for i := range 5 {
+	//for i := range 5 {
+	i := 0
+	for {
+		i++
 		if ctx.Err() != nil {
+			log.Printf("StreamNotes cancelled: %v", ctx.Err())
 			return ctx.Err()
 		}
 
-		log.Printf("Sending note: %d", i)
+		if s.ctx.Err() != nil {
+			log.Printf("StreamNotes cancelled: %v", s.ctx.Err())
+			return ctx.Err()
+		}
+
+		//log.Printf("Sending note: %d", i)
 		noteResp := &pb.NoteResponse{
 			Id: fmt.Sprintf("note: %d", i),
 		}
